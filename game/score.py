@@ -1,5 +1,5 @@
-import settings
-import models
+from . import settings
+from . import models
 
 
 # class ScoreHandler:
@@ -29,14 +29,19 @@ class ScoreHandler:
         with open(file_name, "r") as file:
             for line in file:
                 """вернуться и доделать чтение и сохранение из файла в PlayerRecord"""
-                # line = PlayerRecord()
-                print(line)
+                name, mode, score = line.strip().split(" ")
+                # score = line.strip().split(" ")[-1]
+                # print(f"имя {name}, уровень {mode}, очки {score}")
+                play_record = PlayerRecord(name, mode, int(score))
+                # print(f"{play_record}")
+                self.game_record.add_record(play_record.name, play_record.mode, play_record.score)
+                print(self.game_record)
 
-    def save(self, file_name, player: models.Player):
+    def save(self, player: models.Player, mode: int, file_name = "result.txt"):
         """метод, который нужен, что бы записать новые результаты в файл (предварительно отсортировать и обрезать, если нужно)"""
-        with open(file_name, "w") as file:
-            content = file.write(str(player))
-            print(player)
+        with open(file_name, "a") as file:
+            content = f"\n{player.name} {settings.MODES[str(mode)]} {player.score}"
+            file.write(content)
             print(content)
 
     def display(self, file_name: str):
@@ -54,6 +59,8 @@ class PlayerRecord:
         self.name = name
         self.mode = mode
         self.score = score
+        # GameRecord.game_record.add_record(self.name, self.mode, self.score)
+        # print(f"Checking PlayRecord{name}{mode}{score}")
     def __gt__(self, other) -> bool:
         """для того что бы можно было отсортировать записи по очкам"""
         return self.score > other.score
@@ -73,16 +80,22 @@ class GameRecord:
 
     def __eq__(self, other) -> bool:
         """меджик метод для поиска через in ????????"""
-        return (self.name, self.mode) == (other.name, other.mode)
+        return self.name, self.mode == other.name, other.mode
 
-    def add_record(self, player: PlayerRecord) -> None:
+    def add_record(self, name, mode, score) -> None:
         """метод для добавления записи об одном игроке, перезаписывает результат, если находит того же самого игрока по имени и уровню сложности"""
-        if player in self.records:
-            for i in self.records:
-                if PlayerRecord.__gt__(player, self.records[i]):
-                    self.records[i] = player.score
-        else:
-            self.records.append(player)
+        # self.records.append({(name, mode): score})
+        play_record = PlayerRecord(name, mode, score)
+        for record in self.records:
+            if play_record == record:
+                if play_record > record:
+                    del self.records[record]
+                    self.records.append(play_record)
+            else:
+                self.records.append(play_record)
+        # print(f"Добавление записи: {play_record}")  # Проверка добавления записи
+        for record in self.records:
+            print(record)
 
 
 
@@ -99,9 +112,9 @@ class GameRecord:
 # David = PlayerRecord("David", 2, 12)
 # Alex = PlayerRecord("Alex", 2, 45)
 
-game_record = GameRecord()
+# game_record = GameRecord()
 # game_record.add_record(Alex)
 # game_record.add_record(David)
 
-score_handler = ScoreHandler("result.txt")
-print(game_record)
+# score_handler = ScoreHandler("result.txt")
+# print(game_record)

@@ -74,7 +74,14 @@ class Game:
 
     def save_score(self):
         """ вызывает сохранение очков при помощи вызова класса из файла score.py"""
-        pass
+        from .score import ScoreHandler
+        score_handler = ScoreHandler("result.txt")
+        score_handler.read("result.txt")
+        score_handler.save(self.player, self.mode)
+        # print(f"игрок {self.player.name} с уровнем {self.mode}")
+
+        # score_handler.read("result.txt")
+
 
 
 # game = Game(player=models.Player, mode=models.Enemy)

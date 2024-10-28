@@ -49,8 +49,9 @@ def main():
         except ValueError:
             print("Ошибка! Вы должны выбрать только 1,2 или 3")
             continue
+if __name__ == "__main__":
+    main()
 
-main()
 
 
 
