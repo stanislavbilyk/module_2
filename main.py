@@ -13,18 +13,19 @@ menu = [
 def play_game():
     """вызывается если игрок выбрал начать игру, в этой функции будет запущен процесс создания игрока,
     создание объекта игры и запуск самой игры"""
-    player, mode = create_player()
-    game = Game(player, mode=mode)
+    # player, mode = create_player()
+    player = Player()
+    game = Game(player)
     game.play()
 
 
-def create_player():
+# def create_player():
     """спросить игрока имя и сложность, создать объект игрока с указанным именем,
     и передать объект игрока и сложность в класс игры"""
-    name = input("Введите имя игрока: ")
-    mode = int(input("Выберите уровень сложности игры(1 или 2): "))
-    player = Player(name)
-    return player, mode
+    # name = input("Введите имя игрока: ")
+    # mode = int(input("Выберите уровень сложности игры(1 или 2): "))
+    # player = Player(name)
+    # return player, mode
 
 
 

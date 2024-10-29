@@ -5,3 +5,7 @@ Marvel Hard 1
 Tanos Normal 15
 IronMen Normal 10
 Leonid Normal 10
+Test Normal 0
+Test2 Hard 0
+Test3 Normal 0
+Test4 Normal 5

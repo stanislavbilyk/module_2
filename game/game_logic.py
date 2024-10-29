@@ -12,11 +12,11 @@ class Game:
     #уровень сложности, normal или hard, содержит либо 1, либо 2, которые определены константами
     mode: int
     #player - объект игрока
-    def __init__(self, player: Player, mode: int) -> None:
+    def __init__(self, player: Player) -> None:
         """принимает объект игрока и уровень сложности, создает первого соперника"""
         self.__player = player
-        self.enemy = Enemy(level=1, mode=mode)
-        self.mode = mode
+        self.mode = int(input("Выберите уровень сложности игры(1 или 2): "))
+        self.enemy = Enemy(level=1, mode=self.mode)
 
     def create_enemy(self) -> None:
         """метод для создания нового соперника"""
