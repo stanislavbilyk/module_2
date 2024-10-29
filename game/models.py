@@ -1,6 +1,5 @@
 from game import settings
 from game import exceptions
-from game import game_logic
 import random
 
 

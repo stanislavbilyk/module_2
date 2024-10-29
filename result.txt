@@ -4,3 +4,4 @@ Robocop Normal 0
 Marvel Hard 1
 Tanos Normal 15
 IronMen Normal 10
+Leonid Normal 10

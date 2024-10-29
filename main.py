@@ -1,7 +1,7 @@
 from game import settings
 from game import exceptions
-from game import models
-from game import game_logic
+from game.models import Player
+from game.game_logic import Game
 
 menu = [
     "1 - Запуск игры",
@@ -13,17 +13,20 @@ menu = [
 def play_game():
     """вызывается если игрок выбрал начать игру, в этой функции будет запущен процесс создания игрока,
     создание объекта игры и запуск самой игры"""
+    player, mode = create_player()
+    game = Game(player, mode=mode)
+    game.play()
 
 
-    def create_player():
-        """спросить игрока имя и сложность, создать объект игрока с указанным именем,
-        и передать объект игрока и сложность в класс игры"""
-        name = input("Введите имя игрока: ")
-        mode = int(input("Выберите уровень сложности игры(1 или 2): "))
-        # player = models.Player(name)
-        game = game_logic.Game(name=name, mode=mode)
-        game.play()
-    create_player()
+def create_player():
+    """спросить игрока имя и сложность, создать объект игрока с указанным именем,
+    и передать объект игрока и сложность в класс игры"""
+    name = input("Введите имя игрока: ")
+    mode = int(input("Выберите уровень сложности игры(1 или 2): "))
+    player = Player(name)
+    return player, mode
+
+
 
 def main():
     while True:
