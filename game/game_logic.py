@@ -1,8 +1,6 @@
 from . import settings
 from game import exceptions
 from .models import Player, Enemy
-# import score
-# from module_2 import main
 
 
 class Game:
@@ -12,9 +10,9 @@ class Game:
     #уровень сложности, normal или hard, содержит либо 1, либо 2, которые определены константами
     mode: int
     #player - объект игрока
-    def __init__(self, player: Player) -> None:
+    def __init__(self) -> None:
         """принимает объект игрока и уровень сложности, создает первого соперника"""
-        self.__player = player
+        self.__player = Player()
         self.mode = int(input("Выберите уровень сложности игры(1 или 2): "))
         self.enemy = Enemy(level=1, mode=self.mode)
 
@@ -74,7 +72,37 @@ class Game:
         score_handler.save(self.__player, self.mode)
         # print(f"игрок {self.player.name} с уровнем {self.mode}")
 
+def play_game():
+    """вызывается если игрок выбрал начать игру, в этой функции будет запущен процесс создания игрока,
+    создание объекта игры и запуск самой игры"""
+    # player, mode = create_player()
+    game = Game()
+    game.play()
 
+def main():
+    while True:
+        for item in settings.menu:
+            print(f"• {item}")
+        user_input = input("Пожалуйста, выберите один из трёх пунктов: ")
+        try:
+            match user_input:
+                case "1":
+                    play_game()
+
+
+                case "2":
+                    def show_scores():
+                        """показать очки, используя класс ScoreHandler"""
+                        pass
+
+
+                case "3":
+                    break
+                case _:
+                    print("Выбор неверный! Попробуйте снова")
+        except ValueError:
+            print("Ошибка! Вы должны выбрать только 1,2 или 3")
+            continue
 
 
 

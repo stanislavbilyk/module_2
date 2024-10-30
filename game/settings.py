@@ -36,3 +36,9 @@ ATTACK_PAIRS_OUTCOME = {
     (SCISSORS, STONE): LOSE,
     (SCISSORS, SCISSORS): DRAW
 }
+
+menu = [
+    "1 - Запуск игры",
+    "2 - Посмотреть очки",
+    "3 - Выйти из игры"
+]

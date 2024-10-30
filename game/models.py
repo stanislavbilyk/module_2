@@ -5,14 +5,14 @@ import random
 
 class Player:
     lives: int
-    def __init__(self, lives: int = 2, score: int = 0) -> None:
+    def __init__(self) -> None:
         """для инициализации игрока, принимает только имя, назначает имя, кол-во жизней и очков."""
         #Имя игрока, задается пользователем через консоль
         self.name = input("Введите имя игрока: ")
         #Количество жизней, берется из константы из settings.py
-        self.lives = lives
+        self.lives = settings.PLAYER_LIVES
         #Очки игрока, изначально 0
-        self.score = score
+        self.score = 0
         print(f"Приветствую, {self.name}!")
 
     def select_attack(self):

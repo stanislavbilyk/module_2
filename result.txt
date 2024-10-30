@@ -9,3 +9,12 @@ Test Normal 0
 Test2 Hard 0
 Test3 Normal 0
 Test4 Normal 5
+Test5 Normal 5
+Test6 Normal 0
+Test7 Normal 15
+123 Normal 5
+Willy Normal 15
+NewPlayer Normal 0
+123 Normal 35
+Valerian Normal 5
+Player Normal 5

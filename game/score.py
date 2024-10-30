@@ -31,10 +31,10 @@ class ScoreHandler:
                 """вернуться и доделать чтение и сохранение из файла в PlayerRecord"""
                 name, mode, score = line.strip().split(" ")
                 # score = line.strip().split(" ")[-1]
-                # print(f"имя {name}, уровень {mode}, очки {score}")
-                play_record = PlayerRecord(name, mode, int(score))
+                print(f"имя {name}, уровень {mode}, очки {score}")
+                # play_record = PlayerRecord(name, mode, int(score))
                 # print(f"{play_record}")
-                self.game_record.add_record(play_record.name, play_record.mode, play_record.score)
+                self.game_record.add_record(name, mode, int(score))
                 print(self.game_record)
 
     def save(self, player: models.Player, mode: int, file_name = "result.txt"):
@@ -46,7 +46,11 @@ class ScoreHandler:
 
     def display(self, file_name: str):
         """метод для отображения очков"""
-        pass
+        with open(file_name, "r") as file:
+            for line in file:
+                name, mode, score = line.strip().split(" ")
+                print(f"{name} {mode} {score}")
+
 
 
 class PlayerRecord:
@@ -61,6 +65,11 @@ class PlayerRecord:
         self.score = score
         # GameRecord.game_record.add_record(self.name, self.mode, self.score)
         # print(f"Checking PlayRecord{name}{mode}{score}")
+
+    def __eq__(self, other) -> bool:
+        """меджик метод для поиска через in ????????"""
+        return (self.name, self.mode) == (other.name, other.mode)
+
     def __gt__(self, other) -> bool:
         """для того что бы можно было отсортировать записи по очкам"""
         return self.score > other.score
@@ -78,9 +87,9 @@ class GameRecord:
         """создает объект с пустым списком объектов типа PlayerRecord"""
         self.records: list[PlayerRecord] = []
 
-    def __eq__(self, other) -> bool:
-        """меджик метод для поиска через in ????????"""
-        return self.name, self.mode == other.name, other.mode
+    # def __eq__(self, other) -> bool:
+    #     """меджик метод для поиска через in ????????"""
+    #     return self.name, self.mode == other.name, other.mode
 
     def add_record(self, name, mode, score) -> None:
         """метод для добавления записи об одном игроке, перезаписывает результат, если находит того же самого игрока по имени и уровню сложности"""
@@ -89,7 +98,7 @@ class GameRecord:
         for record in self.records:
             if play_record == record:
                 if play_record > record:
-                    del self.records[record]
+                    self.records.remove(record)
                     self.records.append(play_record)
             else:
                 self.records.append(play_record)
@@ -97,7 +106,11 @@ class GameRecord:
         for record in self.records:
             print(record)
 
-
+    def prepare_records(self):
+        """метод для сортировки существующих результатов и обрезки до максимального кол-ва указанного в настройках"""
+        self.records.sort(key=lambda record: record.score, reverse=True)
+        # length = len(self.records)
+        self.records = self.records[:settings.MAX_RECORDS_NUMBER]
 
     def __str__(self) -> str:
         return "\n".join(str(record) for record in self.records)
