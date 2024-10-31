@@ -31,11 +31,12 @@ class ScoreHandler:
                 """вернуться и доделать чтение и сохранение из файла в PlayerRecord"""
                 name, mode, score = line.strip().split(" ")
                 # score = line.strip().split(" ")[-1]
-                print(f"имя {name}, уровень {mode}, очки {score}")
+                # print(f"имя {name}, уровень {mode}, очки {score}")
                 # play_record = PlayerRecord(name, mode, int(score))
                 # print(f"{play_record}")
                 self.game_record.add_record(name, mode, int(score))
-                print(self.game_record)
+                self.game_record.prepare_records()
+                # print(self.game_record)
 
     def save(self, player: models.Player, mode: int, file_name = "result.txt"):
         """метод, который нужен, что бы записать новые результаты в файл (предварительно отсортировать и обрезать, если нужно)"""
@@ -44,12 +45,10 @@ class ScoreHandler:
             file.write(content)
             print(content)
 
-    def display(self, file_name: str):
+    def display(self):
         """метод для отображения очков"""
-        with open(file_name, "r") as file:
-            for line in file:
-                name, mode, score = line.strip().split(" ")
-                print(f"{name} {mode} {score}")
+        for record in self.game_record.records:
+            print(f"{record.name} : {record.score}")
 
 
 
@@ -95,16 +94,17 @@ class GameRecord:
         """метод для добавления записи об одном игроке, перезаписывает результат, если находит того же самого игрока по имени и уровню сложности"""
         # self.records.append({(name, mode): score})
         play_record = PlayerRecord(name, mode, score)
-        for record in self.records:
+        record_found = False
+        for index, record in enumerate(self.records):
             if play_record == record:
+                record_found = True
                 if play_record > record:
-                    self.records.remove(record)
-                    self.records.append(play_record)
-            else:
-                self.records.append(play_record)
+                    self.records[index] = play_record
+        if not record_found:
+            self.records.append(play_record)
         # print(f"Добавление записи: {play_record}")  # Проверка добавления записи
-        for record in self.records:
-            print(record)
+        # for record in self.records:
+        #     print(record)
 
     def prepare_records(self):
         """метод для сортировки существующих результатов и обрезки до максимального кол-ва указанного в настройках"""

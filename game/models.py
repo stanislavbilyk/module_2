@@ -39,7 +39,7 @@ class Player:
         Если жизни закончились, вызывает исключение GameOver из файла exceptions.py"""
         self.lives -= 1
         try:
-            exceptions.check_lives(self.lives)
+            check_lives(self.lives)
         except exceptions.GameOver as e:
             print(e)
             raise
@@ -79,14 +79,22 @@ class Enemy:
          если у соперника закончились жизни"""
         self.lives -= 1
         try:
-            exceptions.enemy_lives(self.lives)
-            return settings.POINTS_FOR_FIGHT
+            enemy_lives(self.lives)
+            # return settings.POINTS_FOR_FIGHT
         except exceptions.EnemyDown as e:
             print(e)
             # game.create_enemy(self.level, self.lives)
-            return settings.POINTS_FOR_KILLING
+            # return settings.POINTS_FOR_KILLING
+            raise
 
-# en = Enemy(1, 1)
+def check_lives(lives):
+    if lives > 0:
+        print("Вы потеряли одну жизнь")
+    else:
+        raise exceptions.GameOver("Жизни игрока закончились")
 
-# print(f"Ход соперника: {en.select_attack()}")
-# print(en.lives)
+def enemy_lives(lives):
+    if lives > 0:
+        print("Ваш соперник потерял одну жизнь")
+    else:
+        raise exceptions.EnemyDown("Жизни соперника закончились")

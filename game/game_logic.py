@@ -1,6 +1,7 @@
 from . import settings
 from game import exceptions
 from .models import Player, Enemy
+from .score import ScoreHandler
 
 
 class Game:
@@ -32,9 +33,10 @@ class Game:
         """принимает результат боя, и в зависимости от результата отнимает жизни либо у игрока, либо у соперника"""
         if result == 1:
             try:
-                points = self.enemy.decrease_lives()
-                self.__player.add_score(points)
+                self.enemy.decrease_lives()
+                self.__player.add_score(settings.POINTS_FOR_FIGHT)
             except exceptions.EnemyDown:
+                self.__player.add_score(settings.POINTS_FOR_KILLING)
                 print("Жизни соперника закончились")
                 raise
         elif result == -1:
@@ -66,10 +68,13 @@ class Game:
 
     def save_score(self):
         """ вызывает сохранение очков при помощи вызова класса из файла score.py"""
-        from .score import ScoreHandler
         score_handler = ScoreHandler("result.txt")
         score_handler.read("result.txt")
-        score_handler.save(self.__player, self.mode)
+        try:
+            score_handler.save(self.__player, self.mode)
+        except ValueError as e:
+            print(f"ValueError при сохранении очков: {e}")
+
         # print(f"игрок {self.player.name} с уровнем {self.mode}")
 
 def play_game():
@@ -91,9 +96,9 @@ def main():
 
 
                 case "2":
-                    def show_scores():
-                        """показать очки, используя класс ScoreHandler"""
-                        pass
+                    show_scores()
+                    """показать очки, используя класс ScoreHandler"""
+
 
 
                 case "3":
@@ -106,5 +111,8 @@ def main():
 
 
 
-
+def show_scores():
+    score_handler = ScoreHandler("result.txt")
+    score_handler.read("result.txt")
+    score_handler.display()
 
