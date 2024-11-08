@@ -9,7 +9,7 @@ POINTS_FOR_KILLING = 5
 MAX_RECORDS_NUMBER = 5
 HARD_MODE_MULTIPLIER = 2
 
-SCORE_FILE = 'scores.txt'
+SCORE_FILE = 'result.txt'
 
 PAPER = 'Paper'
 STONE = 'Stone'

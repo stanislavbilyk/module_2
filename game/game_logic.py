@@ -14,8 +14,21 @@ class Game:
     def __init__(self) -> None:
         """принимает объект игрока и уровень сложности, создает первого соперника"""
         self.__player = Player()
-        self.mode = int(input("Выберите уровень сложности игры(1 или 2): "))
-        self.enemy = Enemy(level=1, mode=self.mode)
+        while True:
+            try:
+                self.mode = int(input("Выберите уровень сложности игры(1 или 2): "))
+                self.enemy = Enemy(level=1, mode=self.mode)
+                if self.mode not in (1, 2):
+                    raise exceptions.ValidationMode
+                break
+            except exceptions.ValidationMode:
+                print("Не верный ввод! Повторите заново")
+            except KeyError:
+                print("Не правильный ввод! Введите 1 или 2")
+                continue
+            except ValueError:
+                print("Ошибка! Вы должны выбрать только 1 или 2")
+                continue
 
     def create_enemy(self) -> None:
         """метод для создания нового соперника"""
@@ -27,6 +40,8 @@ class Game:
         my_attack = self.__player.select_attack()
         enemy_attack = self.enemy.select_attack()
         result = settings.ATTACK_PAIRS_OUTCOME[(my_attack, enemy_attack)]
+        if result not in (-1, 1):
+            raise exceptions.ValidationFight
         return result
 
     def handle_fight_result(self, result: str) -> None:
@@ -34,9 +49,9 @@ class Game:
         if result == 1:
             try:
                 self.enemy.decrease_lives()
-                self.__player.add_score(settings.POINTS_FOR_FIGHT)
+                self.__player.add_score(settings.POINTS_FOR_FIGHT, self.mode)
             except exceptions.EnemyDown:
-                self.__player.add_score(settings.POINTS_FOR_KILLING)
+                self.__player.add_score(settings.POINTS_FOR_KILLING, self.mode)
                 print("Жизни соперника закончились")
                 raise
         elif result == -1:
@@ -55,7 +70,7 @@ class Game:
                 result = self.fight()
                 self.handle_fight_result(result=result)
             except exceptions.EnemyDown:
-                self.__player.add_score(settings.POINTS_FOR_KILLING)
+                # self.__player.add_score(settings.POINTS_FOR_KILLING)
                 self.create_enemy()
             except exceptions.GameOver:
                 print("You lost the game")
@@ -69,11 +84,9 @@ class Game:
     def save_score(self):
         """ вызывает сохранение очков при помощи вызова класса из файла score.py"""
         score_handler = ScoreHandler("result.txt")
-        score_handler.read("result.txt")
-        try:
-            score_handler.save(self.__player, self.mode)
-        except ValueError as e:
-            print(f"ValueError при сохранении очков: {e}")
+        score_handler.read("result.txt", self.__player, self.mode)
+        score_handler.save()
+
 
         # print(f"игрок {self.player.name} с уровнем {self.mode}")
 
@@ -100,12 +113,11 @@ def main():
                     """показать очки, используя класс ScoreHandler"""
 
 
-
                 case "3":
                     break
                 case _:
                     print("Выбор неверный! Попробуйте снова")
-        except ValueError:
+        except exceptions.IncorrectMenuInput:
             print("Ошибка! Вы должны выбрать только 1,2 или 3")
             continue
 

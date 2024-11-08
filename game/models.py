@@ -9,8 +9,12 @@ class Player:
         """для инициализации игрока, принимает только имя, назначает имя, кол-во жизней и очков."""
         #Имя игрока, задается пользователем через консоль
         self.name = input("Введите имя игрока: ")
+        if not self.name.strip():  # Проверка на пустую строку или строку, состоящую из пробелов
+            raise exceptions.ValidationName("Имя пользователя не может быть пустым или состоять только из пробелов.")
         #Количество жизней, берется из константы из settings.py
         self.lives = settings.PLAYER_LIVES
+        if self.lives < 0:
+            raise exceptions.ValidationLives
         #Очки игрока, изначально 0
         self.score = 0
         print(f"Приветствую, {self.name}!")
@@ -23,11 +27,11 @@ class Player:
             try:
                 attack = int(attack)
                 if attack not in (1, 2, 3):
-                    raise exceptions.IncorrectInputError
+                    raise exceptions.IncorrectAttackError
             except ValueError:
                 print("Не правильный ввод! Введите 1, 2 или 3")
                 continue
-            except exceptions.IncorrectInputError:
+            except exceptions.IncorrectAttackError:
                 print("Не правильный ввод! Введите 1, 2 или 3")
                 continue
             else:
@@ -45,14 +49,12 @@ class Player:
             raise
 
 
-    def add_score(self, points):
+    def add_score(self, points: int, mode: int):
         """метод для начисления очков игроку"""
-        self.score += points
-
-
-
-# john = Player("John")
-# print(john.select_attack())
+        if mode == 1:
+            self.score += points
+        else:
+            self.score += points * settings.HARD_MODE_MULTIPLIER
 
 
 class Enemy:
