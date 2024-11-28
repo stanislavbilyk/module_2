@@ -1,19 +1,35 @@
 from game import settings
 from game import exceptions
-from game import game_logic
 import random
+import psycopg2
+from psycopg2.errors import UniqueViolation
 
 
 class Player:
     lives: int
-    def __init__(self, name: str, lives: int = 2, score: int = 0) -> None:
+    def __init__(self) -> None:
         """для инициализации игрока, принимает только имя, назначает имя, кол-во жизней и очков."""
         #Имя игрока, задается пользователем через консоль
-        self.name = name
+        self.name = input("Введите имя игрока: ")
+        try:
+            with psycopg2.connect(
+                dbname="module_2",
+                user="player",
+                password="mypass"
+            ) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("insert into player (name) values (%s);", (self.name,))
+                    print("Данные успешно добавлены.")
+        except UniqueViolation:
+            print("User already exist")
+        if not self.name.strip():  # Проверка на пустую строку или строку, состоящую из пробелов
+            raise exceptions.ValidationName("Имя пользователя не может быть пустым или состоять только из пробелов.")
         #Количество жизней, берется из константы из settings.py
-        self.lives = lives
+        self.lives = settings.PLAYER_LIVES
+        if self.lives < 0:
+            raise exceptions.ValidationLives
         #Очки игрока, изначально 0
-        self.score = score
+        self.score = 0
         print(f"Приветствую, {self.name}!")
 
     def select_attack(self):
@@ -24,11 +40,11 @@ class Player:
             try:
                 attack = int(attack)
                 if attack not in (1, 2, 3):
-                    raise exceptions.IncorrectInputError
+                    raise exceptions.IncorrectAttackError
             except ValueError:
                 print("Не правильный ввод! Введите 1, 2 или 3")
                 continue
-            except exceptions.IncorrectInputError:
+            except exceptions.IncorrectAttackError:
                 print("Не правильный ввод! Введите 1, 2 или 3")
                 continue
             else:
@@ -40,20 +56,19 @@ class Player:
         Если жизни закончились, вызывает исключение GameOver из файла exceptions.py"""
         self.lives -= 1
         try:
-            exceptions.check_lives(self.lives)
+            check_lives(self.lives)
         except exceptions.GameOver as e:
             print(e)
             raise
 
 
-    def add_score(self, points):
+    def add_score(self, points: int, mode: int):
         """метод для начисления очков игроку"""
-        self.score += points
-
-
-
-# john = Player("John")
-# print(john.select_attack())
+        if mode == 1:
+            self.score += points
+        elif mode == 2:
+            self.score += points * settings.HARD_MODE_MULTIPLIER
+        print(f"Points added: {points}, Mode: {mode}, Current Score: {self.score}")
 
 
 class Enemy:
@@ -80,14 +95,22 @@ class Enemy:
          если у соперника закончились жизни"""
         self.lives -= 1
         try:
-            exceptions.enemy_lives(self.lives)
-            return settings.POINTS_FOR_FIGHT
+            enemy_lives(self.lives)
+            # return settings.POINTS_FOR_FIGHT
         except exceptions.EnemyDown as e:
             print(e)
             # game.create_enemy(self.level, self.lives)
-            return settings.POINTS_FOR_KILLING
+            # return settings.POINTS_FOR_KILLING
+            raise
 
-# en = Enemy(1, 1)
+def check_lives(lives):
+    if lives > 0:
+        print("Вы потеряли одну жизнь")
+    else:
+        raise exceptions.GameOver("Жизни игрока закончились")
 
-# print(f"Ход соперника: {en.select_attack()}")
-# print(en.lives)
+def enemy_lives(lives):
+    if lives > 0:
+        print("Ваш соперник потерял одну жизнь")
+    else:
+        raise exceptions.EnemyDown("Жизни соперника закончились")

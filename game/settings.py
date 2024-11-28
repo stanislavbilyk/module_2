@@ -9,7 +9,7 @@ POINTS_FOR_KILLING = 5
 MAX_RECORDS_NUMBER = 5
 HARD_MODE_MULTIPLIER = 2
 
-SCORE_FILE = 'scores.txt'
+SCORE_FILE = 'result.txt'
 
 PAPER = 'Paper'
 STONE = 'Stone'
@@ -36,3 +36,9 @@ ATTACK_PAIRS_OUTCOME = {
     (SCISSORS, STONE): LOSE,
     (SCISSORS, SCISSORS): DRAW
 }
+
+menu = [
+    "1 - Запуск игры",
+    "2 - Посмотреть очки",
+    "3 - Выйти из игры"
+]

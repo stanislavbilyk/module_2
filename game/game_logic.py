@@ -1,7 +1,7 @@
 from . import settings
 from game import exceptions
-# import score
-# from module_2 import main
+from .models import Player, Enemy
+from .score import ScoreHandler
 
 
 class Game:
@@ -11,41 +11,51 @@ class Game:
     #уровень сложности, normal или hard, содержит либо 1, либо 2, которые определены константами
     mode: int
     #player - объект игрока
-    # def __mul__(self, other):
-    #     return Game(settings.PLAYER_LIVES * other)
-    def __init__(self, name: str, mode: int) -> None:
+    def __init__(self) -> None:
         """принимает объект игрока и уровень сложности, создает первого соперника"""
-        from .models import Player, Enemy
-        self.player = Player(name)
-        self.enemy = Enemy(level=1, mode=mode)
-        self.mode = mode
+        self.__player = Player()
+        while True:
+            try:
+                self.mode = int(input("Выберите уровень сложности игры(1 или 2): "))
+                self.enemy = Enemy(level=1, mode=self.mode)
+                if self.mode not in (1, 2):
+                    raise exceptions.ValidationMode
+                break
+            except exceptions.ValidationMode:
+                print("Не верный ввод! Повторите заново")
+            except KeyError:
+                print("Не правильный ввод! Введите 1 или 2")
+                continue
+            except ValueError:
+                print("Ошибка! Вы должны выбрать только 1 или 2")
+                continue
 
     def create_enemy(self) -> None:
         """метод для создания нового соперника"""
-        from .models import Enemy
         self.enemy = Enemy(level=self.enemy.level + 1, mode=self.mode)
         print(f"У Вашего нового соперника {self.enemy.level} уровень и {self.enemy.lives} жизни")
 
     def fight(self) -> None:
         """метод запрашивает у пользователя и соперника атаки, из констант получает результат боя (-1, 0, 1)"""
-        from .models import Player, Enemy
-        my_attack = self.player.select_attack()
+        my_attack = self.__player.select_attack()
         enemy_attack = self.enemy.select_attack()
         result = settings.ATTACK_PAIRS_OUTCOME[(my_attack, enemy_attack)]
+        if result not in (settings.WIN, settings.DRAW, settings.LOSE):
+            raise exceptions.ValidationFight
         return result
 
     def handle_fight_result(self, result: str) -> None:
         """принимает результат боя, и в зависимости от результата отнимает жизни либо у игрока, либо у соперника"""
-        from .models import Player, Enemy
         if result == 1:
             try:
-                points = self.enemy.decrease_lives()
-                self.player.add_score(points)
+                self.enemy.decrease_lives()
+                self.__player.add_score(settings.POINTS_FOR_FIGHT, self.mode)
             except exceptions.EnemyDown:
+                self.__player.add_score(settings.POINTS_FOR_KILLING, self.mode)
                 print("Жизни соперника закончились")
                 raise
         elif result == -1:
-            self.player.decrease_lives()
+            self.__player.decrease_lives()
         else:
             print("Ничья, повторите бой")
 
@@ -55,13 +65,12 @@ class Game:
         Для этого вызывает два метода, fight и handle_fight_result. Отслеживает не произошло ли одно из исключений
         при вызове второго метода GameOver или EnemyDown, при первом завершает игру и вызывает метод для записи очков,
         при втором создает нового, более сильного соперника"""
-        from .models import Player, Enemy
         while True:
             try:
                 result = self.fight()
                 self.handle_fight_result(result=result)
             except exceptions.EnemyDown:
-                self.player.add_score(settings.POINTS_FOR_KILLING)
+                # self.__player.add_score(settings.POINTS_FOR_KILLING)
                 self.create_enemy()
             except exceptions.GameOver:
                 print("You lost the game")
@@ -74,8 +83,48 @@ class Game:
 
     def save_score(self):
         """ вызывает сохранение очков при помощи вызова класса из файла score.py"""
-        pass
+        score_handler = ScoreHandler()
+        score_handler.save(self.__player, self.mode)
+        # score_handler.save()
 
 
-# game = Game(player=models.Player, mode=models.Enemy)
+        # print(f"игрок {self.player.name} с уровнем {self.mode}")
+
+def play_game():
+    """вызывается если игрок выбрал начать игру, в этой функции будет запущен процесс создания игрока,
+    создание объекта игры и запуск самой игры"""
+    # player, mode = create_player()
+    game = Game()
+    game.play()
+
+def main():
+    while True:
+        for item in settings.menu:
+            print(f"• {item}")
+        user_input = input("Пожалуйста, выберите один из трёх пунктов: ")
+        try:
+            match user_input:
+                case "1":
+                    play_game()
+
+
+                case "2":
+                    show_scores()
+                    """показать очки, используя класс ScoreHandler"""
+
+
+                case "3":
+                    break
+                case _:
+                    print("Выбор неверный! Попробуйте снова")
+        except exceptions.IncorrectMenuInput:
+            print("Ошибка! Вы должны выбрать только 1,2 или 3")
+            continue
+
+
+
+def show_scores():
+    score_handler = ScoreHandler()
+    # score_handler.read("result.txt")
+    score_handler.display()
 

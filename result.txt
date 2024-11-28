@@ -1,0 +1,5 @@
+vvv Normal 35
+www Hard 24
+test Normal 22
+ccc Normal 21
+Mike Hard 14
