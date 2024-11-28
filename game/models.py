@@ -1,6 +1,8 @@
 from game import settings
 from game import exceptions
 import random
+import psycopg2
+from psycopg2.errors import UniqueViolation
 
 
 class Player:
@@ -9,6 +11,17 @@ class Player:
         """для инициализации игрока, принимает только имя, назначает имя, кол-во жизней и очков."""
         #Имя игрока, задается пользователем через консоль
         self.name = input("Введите имя игрока: ")
+        try:
+            with psycopg2.connect(
+                dbname="module_2",
+                user="player",
+                password="mypass"
+            ) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("insert into player (name) values (%s);", (self.name,))
+                    print("Данные успешно добавлены.")
+        except UniqueViolation:
+            print("User already exist")
         if not self.name.strip():  # Проверка на пустую строку или строку, состоящую из пробелов
             raise exceptions.ValidationName("Имя пользователя не может быть пустым или состоять только из пробелов.")
         #Количество жизней, берется из константы из settings.py
@@ -53,8 +66,9 @@ class Player:
         """метод для начисления очков игроку"""
         if mode == 1:
             self.score += points
-        else:
+        elif mode == 2:
             self.score += points * settings.HARD_MODE_MULTIPLIER
+        print(f"Points added: {points}, Mode: {mode}, Current Score: {self.score}")
 
 
 class Enemy:

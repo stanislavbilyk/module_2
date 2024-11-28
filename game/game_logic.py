@@ -40,7 +40,7 @@ class Game:
         my_attack = self.__player.select_attack()
         enemy_attack = self.enemy.select_attack()
         result = settings.ATTACK_PAIRS_OUTCOME[(my_attack, enemy_attack)]
-        if result not in (-1, 1):
+        if result not in (settings.WIN, settings.DRAW, settings.LOSE):
             raise exceptions.ValidationFight
         return result
 
@@ -83,9 +83,9 @@ class Game:
 
     def save_score(self):
         """ вызывает сохранение очков при помощи вызова класса из файла score.py"""
-        score_handler = ScoreHandler("result.txt")
-        score_handler.read("result.txt", self.__player, self.mode)
-        score_handler.save()
+        score_handler = ScoreHandler()
+        score_handler.save(self.__player, self.mode)
+        # score_handler.save()
 
 
         # print(f"игрок {self.player.name} с уровнем {self.mode}")
@@ -124,7 +124,7 @@ def main():
 
 
 def show_scores():
-    score_handler = ScoreHandler("result.txt")
-    score_handler.read("result.txt")
+    score_handler = ScoreHandler()
+    # score_handler.read("result.txt")
     score_handler.display()
 

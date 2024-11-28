@@ -1,49 +1,92 @@
 from . import settings
 from . import models
+import psycopg2
+from psycopg2.errors import UniqueViolation
 
 
 class ScoreHandler:
     """класс для обработки очков"""
-    def __init__(self, file_name) -> None:
-        """принимает только имя файла и сохраняет его. Вызывает метод для чтения файла"""
+    # def __init__(self) -> None:
+    #     """принимает только имя файла и сохраняет его. Вызывает метод для чтения файла"""
         #объект класса GameRecord, туда мы будем считывать сохраненные очки и записывать таблицу с новыми
-        self.game_record = GameRecord()
-        self.file_name = file_name
+        # self.game_record = GameRecord()
+        # self.file_name = file_name
 
 
-    def read(self, file_name = settings.SCORE_FILE, player: models.Player = None, player_mode: int = None):
-        """метод, который будет читать файл и каждую его строку сохранять в PlayerRecord, которые будут сохранятся в GameRecord"""
-        with open(file_name, "r") as file:
-            for line in file:
-                """вернуться и доделать чтение и сохранение из файла в PlayerRecord"""
-                # name, mode, score = line.strip().split(" ")
-                name, mode_str, score = line.strip().split(" ")
+    # def read(self, file_name = settings.SCORE_FILE, player: models.Player = None, player_mode: int = None):
+    #     """метод, который будет читать файл и каждую его строку сохранять в PlayerRecord, которые будут сохранятся
+    #      в GameRecord"""
+    #     with open(file_name, "r") as file:
+    #         for line in file:
+    #             """вернуться и доделать чтение и сохранение из файла в PlayerRecord"""
+    #             # name, mode, score = line.strip().split(" ")
+    #             name, mode_str, score = line.strip().split(" ")
 
-                # Преобразуем строку 'Normal' или 'Hard' в числовой ключ
-                mode_key = [key for key, value in settings.MODES.items() if value == mode_str]
+#                 # Преобразуем строку 'Normal' или 'Hard' в числовой ключ
+#                 mode_key = [key for key, value in settings.MODES.items() if value == mode_str]
 
-                if mode_key:
-                    mode = int(mode_key[0])
-                self.game_record.add_record(name, mode, int(score))
-                self.game_record.prepare_records()
-            if player and player_mode is not None:
-                self.game_record.add_record(player.name, player_mode, int(player.score))
-                self.game_record.prepare_records()
+#                 if mode_key:
+#                     mode = int(mode_key[0])
+#                 self.game_record.add_record(name, mode, int(score))
+#                 self.game_record.prepare_records()
+#             if player and player_mode is not None:
+#                 self.game_record.add_record(player.name, player_mode, int(player.score))
+#                 self.game_record.prepare_records()
 
-    def save(self, file_name = "result.txt"):
+    def save(self, player: models.Player, player_mode: int):
         """метод, который нужен, что бы записать новые результаты в файл (предварительно отсортировать и обрезать, если нужно)"""
-        with open(file_name, "w") as file:
-            for record in self.game_record.records:
-                content = f"{record.name} {settings.MODES[str(record.mode)]} {record.score}\n"
-                file.write(content)
+        try:
+            with psycopg2.connect(
+                dbname="module_2",
+                user="player",
+                password="mypass"
+            ) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("insert into score (player, mode, score) values (%s, %s, %s);", (player.name, settings.MODES[str(player_mode)], player.score))
+                    print("Новый игрок сохранён")
+        except UniqueViolation:
+            print("Игрок с таким именем и режимом уже существует. Проверяем, нужно ли обновить результат...")
+            with psycopg2.connect(
+                dbname="module_2",
+                user="player",
+                password="mypass"
+            ) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                    "SELECT score FROM score WHERE player = %s AND mode = %s;",
+                    (player.name, settings.MODES[str(player_mode)])
+                )
+                    existing_score = cur.fetchone()[0]
+                    if player.score > existing_score:
+                        cur.execute(
+                        "UPDATE score SET score = %s WHERE player = %s AND mode = %s;",
+                        (player.score, player.name, settings.MODES[str(player_mode)])
+                    )
+                        print("Результат обновлён")
+                    else:
+                        print("Новый результат не выше текущего. Обновление не требуется.")
+
 
 
     def display(self):
         """метод для отображения очков"""
-        print(f"{'Name':<10} {'Mode':<10} {'Score':<5}")
-        print("=" * 25)
-        for record in self.game_record.records:
-            print(f"{record.name:<10} {record.mode:<10} {record.score:<5}")
+        with psycopg2.connect(
+            dbname="module_2",
+            user="player",
+            password="mypass"
+        ) as conn:
+            with conn.cursor() as cur:
+                cur.execute("select player, mode, score from score order by score desc limit 5;")
+                res = cur.fetchall()
+                print(f"{'Name':<15} {'Mode':<15} {'Score':<5}")
+                print("=" * 40)
+                for i in res:
+                    name, mode, score = i
+                    print(f"{name:<15} {mode:<15} {score:<5}")
+        # print(f"{'Name':<10} {'Mode':<10} {'Score':<5}")
+        # print("=" * 25)
+        # for record in self.game_record.records:
+        #     print(f"{record.name:<10} {record.mode:<10} {record.score:<5}")
 
 
 
